@@ -1,6 +1,7 @@
 name: Testnet ci
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'testnet'
@@ -39,8 +40,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with: 
+          context: .
           file: docker/testnet.dockerfile
           push: true
-          tags: gluwa/crunch-testnet:latest
+          tags: gluwa/crunch:testnet-${{github.run_id}}
 
       
