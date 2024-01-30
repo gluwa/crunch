@@ -1,4 +1,4 @@
-name: Testnet ci
+name: Testnet CI
 
 on:
   workflow_dispatch:
