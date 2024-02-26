@@ -26,14 +26,6 @@ jobs:
       - name: Set up account private key
         run: |
           echo "${{ secrets.DEVNET_CRUNCH_PK }}" >> environments/cc3/devnet/.private.seed
-          
-      - name: Set up Crunch configuration
-        run: |
-          echo "${{ secrets.DEVNET_CRUNCH_CONFIG }}" >> environments/cc3/devnet/.env
-
-      - name: Check settings
-        run: |
-          ls -a environments/cc3/devnet/
 
       - name: Build and push
         uses: docker/build-push-action@v5

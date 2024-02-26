@@ -30,12 +30,6 @@ jobs:
         run: |
           touch environments/cc3/testnet/.private.seed \
             && echo $CRUNCH_AGENT_PK > environments/cc3/testnet/.private.seed
-      - shell: bash
-        env:
-          CRUNCH_AGENT_CONFIG: ${{ secrets.TESTNET_CRUNCH_CONFIG }}  
-        run: |
-          touch environments/cc3/testnet/.env \
-            && echo $CRUNCH_AGENT_CONFIG > environments/cc3/testnet/.env
 
       - name: Build and push
         uses: docker/build-push-action@v5
