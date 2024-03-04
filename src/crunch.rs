@@ -283,7 +283,7 @@ fn spawn_and_restart_subscription_on_error() {
                         continue;
                     }
                 }
-                thread::sleep(time::Duration::from_secs(config.interval));
+                thread::sleep(time::Duration::from_secs(1));
             };
         }
     });
