@@ -168,9 +168,11 @@ pub async fn try_crunch(crunch: &Crunch) -> Result<(), CrunchError> {
         }
     }
 
+
     // Try run payouts in batches
     let (mut validators, payout_summary) =
         try_run_batch_payouts(&crunch, &seed_account_signer).await?;
+    
 
     // Try run members in batches
     let pools_summary = try_run_batch_pool_members(&crunch, &seed_account_signer).await?;
@@ -384,6 +386,7 @@ pub async fn try_run_batch_payouts(
     let config = CONFIG.clone();
     let api = crunch.client().clone();
     // Warn if static metadata is no longer the same as the latest runtime version
+
     if node_runtime::validate_codegen(&api).is_err() {
         warn!("Crunch upgrade might be required soon. Local static metadata differs from current chain runtime version.");
     }
@@ -486,6 +489,7 @@ pub async fn try_run_batch_payouts(
                     .await?
                     .wait_for_finalized()
                     .await?;
+
 
                 // Alternately, we could just `fetch_events`, which grabs all of the events like
                 // the above, but does not check for success, and leaves it up to you:
@@ -705,7 +709,7 @@ async fn collect_validators_data(
         };
 
         // Look for unclaimed eras, starting on current_era - maximum_eras
-        let start_index = get_era_index_start(era_index).await?;
+        let start_index = get_era_index_start(era_index,  crunch).await?;
 
         // Get staking info from ledger
         let ledger_addr = node_runtime::storage().staking().ledger(&controller);
@@ -753,12 +757,13 @@ async fn collect_validators_data(
 
 async fn get_era_index_start(
     era_index: EraIndex,
+    crunch: &Crunch,
 ) -> Result<EraIndex, CrunchError> {
-    // let api = crunch.client().clone();
+    let api = crunch.client().clone();
     let config = CONFIG.clone();
 
-    // let history_depth_addr = node_runtime::constants().staking().history_depth();
-    let history_depth: u32 = 32; // api.constants().at(&history_depth_addr)?;
+    let history_depth_addr = node_runtime::constants().staking().history_depth();
+    let history_depth: u32 = api.constants().at(&history_depth_addr)?;
 
     if era_index < cmp::min(config.maximum_history_eras, history_depth) {
         return Ok(0);
@@ -988,7 +993,7 @@ pub async fn inspect(crunch: &Crunch) -> Result<(), CrunchError> {
     info!("Inspect {} stashes -> {}", stashes.len(), stashes.join(","));
 
     let history_depth_addr = node_runtime::constants().staking().history_depth();
-    let history_depth: u32 = api.constants().at(&history_depth_addr)?;
+    let mut history_depth: u32 = api.constants().at(&history_depth_addr)?;
 
     let active_era_addr = node_runtime::storage().staking().active_era();
     let active_era_index = match api
@@ -1001,6 +1006,10 @@ pub async fn inspect(crunch: &Crunch) -> Result<(), CrunchError> {
         Some(info) => info.index,
         None => return Err(CrunchError::Other("Active era not available".into())),
     };
+
+    if history_depth > active_era_index {
+            history_depth = active_era_index;
+        }
 
     for stash_str in stashes.iter() {
         let stash = AccountId32::from_str(stash_str).map_err(|e| {
