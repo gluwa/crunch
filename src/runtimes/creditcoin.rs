@@ -168,11 +168,9 @@ pub async fn try_crunch(crunch: &Crunch) -> Result<(), CrunchError> {
         }
     }
 
-
     // Try run payouts in batches
     let (mut validators, payout_summary) =
         try_run_batch_payouts(&crunch, &seed_account_signer).await?;
-    
 
     // Try run members in batches
     let pools_summary = try_run_batch_pool_members(&crunch, &seed_account_signer).await?;
@@ -490,7 +488,6 @@ pub async fn try_run_batch_payouts(
                     .wait_for_finalized()
                     .await?;
 
-
                 // Alternately, we could just `fetch_events`, which grabs all of the events like
                 // the above, but does not check for success, and leaves it up to you:
                 let tx_events = batch_response.fetch_events().await?;
@@ -728,7 +725,7 @@ async fn collect_validators_data(
         };
 
         // Look for unclaimed eras, starting on current_era - maximum_eras
-        let start_index = get_era_index_start(era_index,  crunch).await?;
+        let start_index = get_era_index_start(era_index, crunch).await?;
 
         // Get staking info from ledger
         let ledger_addr = node_runtime::storage().staking().ledger(&controller);
@@ -1026,9 +1023,10 @@ pub async fn inspect(crunch: &Crunch) -> Result<(), CrunchError> {
         None => return Err(CrunchError::Other("Active era not available".into())),
     };
 
+    // if the network is newer than the max history depth
     if history_depth > active_era_index {
-            history_depth = active_era_index;
-        }
+        history_depth = active_era_index;
+    }
 
     for stash_str in stashes.iter() {
         let stash = AccountId32::from_str(stash_str).map_err(|e| {
