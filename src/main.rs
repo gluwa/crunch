@@ -52,11 +52,9 @@ fn main() {
     );
 
     if config.only_view {
-        info!("viewing");
         return Crunch::view();
     }
     if config.is_mode_era {
-        info!("subscring");
         return Crunch::subscribe();
     }
     Crunch::flakes()
