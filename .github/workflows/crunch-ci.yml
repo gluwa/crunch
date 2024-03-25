@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'release/*'
+jobs:
+  ## not sure if having multiple private seeds break image so splitting it up by network still
+  devnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up account private key
+        run: |
+          echo "${{ secrets.DEVNET_CRUNCH_PK }}" >> environments/cc3/devnet/.private.seed
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/devnet.dockerfile
+          push: true
+          tags: gluwa/crunch:devnet-${{github.run_id}}
+
+  testnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up account private key
+        run: |
+          echo "${{ secrets.TESTNET_CRUNCH_PK }}" >> environments/cc3/testnet/.private.seed
+
+      - name: Check settings
+        run: |
+          ls -a environments/cc3/testnet/
+          
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with: 
+          context: .
+          file: docker/testnet.dockerfile
+          push: true
+          tags: gluwa/crunch:testnet-${{github.run_id}}
+          
+  mainnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - shell: bash
+        env:
+          CRUNCH_AGENT_PK: ${{ secrets.MAINNET_CRUNCH_PK }}  
+        run: |
+          touch environments/cc3/mainnet/.private.seed \
+            && echo $CRUNCH_AGENT_PK > environments/cc3/mainnet/.private.seed
+      - shell: bash
+        env:
+          CRUNCH_AGENT_CONFIG: ${{ secrets.MAINNET_CRUNCH_CONFIG }}  
+        run: |
+          touch environments/cc3/mainnet/.env \
+            && echo $CRUNCH_AGENT_CONFIG > environments/cc3/mainnet/.env
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with: 
+          context: .
+          file: docker/mainnet.dockerfile
+          push: true
+          tags: gluwa/crunch:mainnet-${{github.run_id}}
+      
