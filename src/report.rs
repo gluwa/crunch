@@ -359,7 +359,7 @@ impl From<RawData> for Report {
 
                     // Block number
                     report.add_raw_text(format!(
-                        "💯 Payout for era <del>{}</del> finalized at block #{} 
+                        "💯 Payout for era <del>{}</del> finalized at block #{}
                         (<a href=\"https://{}.subscan.io/extrinsic/{:?}\">{}</a>) ✨",
                         payout.era_index,
                         payout.block_number,
@@ -441,7 +441,7 @@ impl From<RawData> for Report {
                 ));
                 for batch in data.pools_summary.batches {
                     report.add_raw_text(format!(
-                        "💯 Batch finalized at block #{} 
+                        "💯 Batch finalized at block #{}
                     (<a href=\"https://{}.subscan.io/extrinsic/{:?}\">{}</a>) ✨",
                         batch.block_number,
                         data.network.name.to_lowercase().trim().replace(" ", ""),
