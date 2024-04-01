@@ -2,7 +2,7 @@
 
 # Two step script
 #   1. check for a creditcoin node at TARGET_URL
-#   2. extract the metadata from the node 
+#   2. extract the metadata from the node
 
 #   Note: both WS and HTTP are served via the same port
 TARGET_URL=${1:-http://127.0.0.1:9944}

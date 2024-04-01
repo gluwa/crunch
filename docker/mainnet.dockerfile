@@ -22,7 +22,7 @@ RUN apt-get update \
 ARG PROFILE=release
 COPY --from=builder /app/target/$PROFILE/crunch /usr/local/bin
 
-# Add the credentials needed to run crunch for this environment 
+# Add the credentials needed to run crunch for this environment
 COPY --from=builder app/environments/cc3/mainnet/* .
 
 RUN useradd -u 1000 -U -s /bin/sh crunch
