@@ -24,10 +24,10 @@ set -e
 # Note: using eval b/c params are specified as string above
 eval curl "$CURL_PARAMS" > /dev/null
 
-subxt metadata --url $TARGET_URL --version $TARGET_VERSION -f bytes > $TARGET_DEST
+subxt metadata --url "$TARGET_URL" --version "$TARGET_VERSION" -f bytes > "$TARGET_DEST"
 
 # Check for the target file and sound the alarm if its not found
-if [ -e $TARGET_DEST ]
+if [ -e "$TARGET_DEST" ]
 then
     echo "$TARGET_DEST generated successfully"
 else
