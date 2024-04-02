@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - 'release/*'
+
+permissions: read-all
+
 jobs:
   ## not sure if having multiple private seeds break image so splitting it up by network still
   devnet:
