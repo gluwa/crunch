@@ -1,9 +1,10 @@
+# hadolint global ignore=DL3008,DL4006
 FROM ubuntu:jammy AS builder
 
 ARG PROFILE=release
 
 RUN apt-get update \
-    && apt-get -y install build-essential curl libssl-dev pkg-config \
+    && apt-get -y --no-install-recommends install build-essential curl libssl-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 RUN /root/.cargo/bin/rustup update
@@ -16,7 +17,7 @@ RUN /root/.cargo/bin/cargo build --$PROFILE --package crunch
 FROM ubuntu:jammy
 
 RUN apt-get update \
-    && apt-get -y install ca-certificates \
+    && apt-get -y --no-install-recommends install ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 ARG PROFILE=release
