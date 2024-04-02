@@ -1,4 +1,4 @@
-## Supported Runtimes
+# Supported Runtimes
   - Polkadot
   - Kusama
   - Westend
