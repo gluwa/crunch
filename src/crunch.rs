@@ -19,51 +19,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 use crate::{
-    config::{
-        Config,
-        CONFIG,
-    },
+    config::{Config, CONFIG},
     errors::CrunchError,
-    matrix::Matrix,
     runtimes::{
-        creditcoin,
-        kusama,
-        polkadot,
-        support::{
-            ChainPrefix,
-            ChainTokenSymbol,
-            SupportedRuntime,
-        },
+        creditcoin, kusama, polkadot,
+        support::{ChainPrefix, ChainTokenSymbol, SupportedRuntime},
         westend,
     },
 };
 use async_std::task;
-use log::{
-    debug,
-    error,
-    info,
-    warn,
-};
+use log::{debug, error, info, warn};
 use rand::Rng;
 use regex::Regex;
 use serde::Deserialize;
-use std::{
-    convert::TryInto,
-    result::Result,
-    thread,
-    time,
-};
+use std::{convert::TryInto, result::Result, thread, time};
 
 use subxt::{
-    ext::sp_core::{
-        crypto,
-        sr25519,
-        Pair as PairT,
-    },
+    ext::sp_core::{crypto, sr25519, Pair as PairT},
     storage::StorageKey,
     utils::AccountId32,
-    OnlineClient,
-    PolkadotConfig,
+    OnlineClient, PolkadotConfig,
 };
 
 pub type ValidatorIndex = Option<usize>;
@@ -166,7 +141,6 @@ pub fn get_from_seed(seed: &str, pass: Option<&str>) -> sr25519::Pair {
 pub struct Crunch {
     runtime: SupportedRuntime,
     client: OnlineClient<PolkadotConfig>,
-    matrix: Matrix,
 }
 
 impl Crunch {
@@ -174,37 +148,14 @@ impl Crunch {
         let (client, runtime) =
             create_or_await_substrate_node_client(CONFIG.clone()).await;
 
-        // Initialize matrix client
-        let mut matrix: Matrix = Matrix::new();
-        matrix.authenticate(runtime).await.unwrap_or_else(|e| {
-            error!("{}", e);
-            Default::default()
-        });
-
-        Crunch {
-            runtime,
-            client,
-            matrix,
-        }
+        Crunch { runtime, client }
     }
 
     pub fn client(&self) -> &OnlineClient<PolkadotConfig> {
         &self.client
     }
 
-    /// Returns the matrix configuration
-    pub fn matrix(&self) -> &Matrix {
-        &self.matrix
-    }
-
-    pub async fn send_message(
-        &self,
-        message: &str,
-        formatted_message: &str,
-    ) -> Result<(), CrunchError> {
-        self.matrix()
-            .send_message(message, formatted_message)
-            .await?;
+    pub async fn send_message(&self) -> Result<(), CrunchError> {
         Ok(())
     }
 
@@ -277,7 +228,6 @@ fn spawn_and_restart_subscription_on_error() {
                         let sleep_min = u32::pow(config.error_interval, n);
                         let message = format!("On hold for {} min!", sleep_min);
                         let formatted_message = format!("<br/>🚨 An error was raised -> <code>crunch</code> on hold for {} min while rescue is on the way 🚁 🚒 🚑 🚓<br/><br/>", sleep_min);
-                        c.send_message(&message, &formatted_message).await.unwrap();
                         thread::sleep(time::Duration::from_secs((60 * sleep_min).into()));
                         n += 1;
                         continue;
@@ -304,7 +254,6 @@ fn spawn_and_restart_crunch_flakes_on_error() {
                         error!("{}", e);
                         let message = format!("On hold for {} min!", sleep_min);
                         let formatted_message = format!("<br/>🚨 An error was raised -> <code>crunch</code> on hold for {} min while rescue is on the way 🚁 🚒 🚑 🚓<br/><br/>", sleep_min);
-                        c.send_message(&message, &formatted_message).await.unwrap();
                     }
                 }
                 thread::sleep(time::Duration::from_secs((60 * sleep_min).into()));
