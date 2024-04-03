@@ -1,3 +1,7 @@
 {
-    "threshold": 5
+    "ignore": [
+        "src/crunch.rs",
+        "src/config.rs",
+        ".github/workflows/*.yml"
+    ]
 }

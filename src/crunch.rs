@@ -225,8 +225,6 @@ fn spawn_and_restart_subscription_on_error() {
                     _ => {
                         error!("{}", e);
                         let sleep_min = u32::pow(config.error_interval, n);
-                        let message = format!("On hold for {} min!", sleep_min);
-                        let formatted_message = format!("<br/>🚨 An error was raised -> <code>crunch</code> on hold for {} min while rescue is on the way 🚁 🚒 🚑 🚓<br/><br/>", sleep_min);
                         thread::sleep(time::Duration::from_secs((60 * sleep_min).into()));
                         n += 1;
                         continue;
