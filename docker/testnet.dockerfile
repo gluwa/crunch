@@ -35,3 +35,4 @@ ENV RUST_LOG="info"
 RUN /usr/local/bin/crunch --version
 
 ENTRYPOINT [ "/usr/local/bin/crunch" ]
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl --fail http://127.0.0.1:9999 || exit 1
