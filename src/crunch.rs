@@ -161,7 +161,6 @@ impl Crunch {
 
     /// Spawn and restart crunch flakes task on error
     pub fn flakes() {
-        println!("here");
         spawn_and_restart_crunch_flakes_on_error();
     }
 
@@ -249,11 +248,8 @@ fn spawn_and_restart_crunch_flakes_on_error() {
             if let Err(e) = c.try_run_batch().await {
                 let sleep_min = u32::pow(config.error_interval, n);
                 match e {
-                    CrunchError::MatrixError(_) => warn!("Matrix message skipped!"),
                     _ => {
                         error!("{}", e);
-                        let message = format!("On hold for {} min!", sleep_min);
-                        let formatted_message = format!("<br/>🚨 An error was raised -> <code>crunch</code> on hold for {} min while rescue is on the way 🚁 🚒 🚑 🚓<br/><br/>", sleep_min);
                     }
                 }
                 thread::sleep(time::Duration::from_secs((60 * sleep_min).into()));
