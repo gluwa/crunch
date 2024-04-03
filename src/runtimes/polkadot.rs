@@ -22,70 +22,37 @@
 use crate::{
     config::CONFIG,
     crunch::{
-        get_account_id_from_storage_key,
-        get_from_seed,
-        random_wait,
-        try_fetch_onet_data,
-        try_fetch_stashes_from_remote_url,
-        Crunch,
-        NominatorsAmount,
-        ValidatorAmount,
+        get_account_id_from_storage_key, get_from_seed, random_wait, try_fetch_onet_data,
+        try_fetch_stashes_from_remote_url, Crunch, NominatorsAmount, ValidatorAmount,
         ValidatorIndex,
     },
     errors::CrunchError,
-    pools::{
-        nomination_pool_account,
-        AccountType,
-    },
+    pools::{nomination_pool_account, AccountType},
     report::{
-        Batch,
-        EraIndex,
-        Network,
-        NominationPoolsSummary,
-        Payout,
-        PayoutSummary,
-        Points,
-        RawData,
-        Report,
-        Signer,
-        Validator,
-        Validators,
+        Batch, EraIndex, Network, NominationPoolsSummary, Payout, PayoutSummary, Points,
+        RawData, Report, Signer, Validator, Validators,
     },
     stats,
 };
 use async_recursion::async_recursion;
 use futures::StreamExt;
-use log::{
-    debug,
-    info,
-    warn,
-};
+use log::{debug, info, warn};
 use std::{
     cmp,
-    convert::{
-        TryFrom,
-        TryInto,
-    },
+    convert::{TryFrom, TryInto},
     fs,
     result::Result,
     str::FromStr,
-    thread,
-    time,
+    thread, time,
 };
 use subxt::{
     error::DispatchError,
     ext::{
         codec::Encode,
-        sp_core::{
-            sr25519,
-            Pair as PairT,
-        },
+        sp_core::{sr25519, Pair as PairT},
     },
     tx::PairSigner,
-    utils::{
-        AccountId32,
-        MultiAddress,
-    },
+    utils::{AccountId32, MultiAddress},
     PolkadotConfig,
 };
 
@@ -98,22 +65,12 @@ mod node_runtime {}
 use node_runtime::{
     runtime_types::{
         bounded_collections::bounded_vec::BoundedVec,
-        pallet_nomination_pools::{
-            BondExtra,
-            ClaimPermission,
-        },
+        pallet_nomination_pools::{BondExtra, ClaimPermission},
     },
-    staking::events::{
-        EraPaid,
-        PayoutStarted,
-        Rewarded,
-    },
+    staking::events::{EraPaid, PayoutStarted, Rewarded},
     system::events::ExtrinsicFailed,
     utility::events::{
-        BatchCompleted,
-        BatchCompletedWithErrors,
-        BatchInterrupted,
-        ItemCompleted,
+        BatchCompleted, BatchCompletedWithErrors, BatchInterrupted, ItemCompleted,
         ItemFailed,
     },
 };
@@ -249,20 +206,6 @@ pub async fn try_crunch(crunch: &Crunch) -> Result<(), CrunchError> {
         token_decimals,
     };
     debug!("network {:?}", network);
-
-    let data = RawData {
-        network,
-        signer,
-        validators,
-        payout_summary,
-        pools_summary,
-    };
-
-    let report = Report::from(data);
-    crunch
-        .send_message(&report.message(), &report.formatted_message())
-        .await?;
-
     Ok(())
 }
 

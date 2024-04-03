@@ -22,16 +22,12 @@
 mod config;
 mod crunch;
 mod errors;
-mod matrix;
 mod pools;
 mod report;
 mod runtimes;
 mod stats;
 
-use crate::{
-    config::CONFIG,
-    crunch::Crunch,
-};
+use crate::{config::CONFIG, crunch::Crunch};
 use log::info;
 use std::env;
 
