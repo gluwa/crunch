@@ -32,7 +32,13 @@ use log::{debug, error, info, warn};
 use rand::Rng;
 use regex::Regex;
 use serde::Deserialize;
-use std::{convert::TryInto, result::Result, thread, time};
+use std::{
+    convert::TryInto,
+    io::{prelude::*, BufReader},
+    net::TcpListener,
+    result::Result,
+    thread, time,
+};
 
 use subxt::{
     ext::sp_core::{crypto, sr25519, Pair as PairT},
@@ -155,10 +161,6 @@ impl Crunch {
         &self.client
     }
 
-    pub async fn send_message(&self) -> Result<(), CrunchError> {
-        Ok(())
-    }
-
     /// Spawn and restart crunch flakes task on error
     pub fn flakes() {
         spawn_and_restart_crunch_flakes_on_error();
@@ -234,6 +236,9 @@ fn spawn_and_restart_subscription_on_error() {
             };
         }
     });
+
+    let h = healthcheck();
+
     task::block_on(t);
 }
 
@@ -257,9 +262,35 @@ fn spawn_and_restart_crunch_flakes_on_error() {
             thread::sleep(time::Duration::from_secs(config.interval));
         }
     });
+
+    let h = healthcheck();
+
     task::block_on(t);
 }
 
+fn healthcheck() -> async_std::task::JoinHandle<()> {
+    let h = task::spawn(async {
+        let listener = TcpListener::bind("127.0.0.1:9999").unwrap();
+        let response = "HTTP/1.1 200 OK\r\n\r\n".as_bytes();
+
+        for stream in listener.incoming() {
+            // unwrap and panic on error to interrupt the main task
+            let mut stream = stream.unwrap();
+
+            // we need to read the full request before we respond or we get a 'connection reset by peer error'
+            let buf_reader = BufReader::new(&mut stream);
+            let http_request: Vec<_> = buf_reader
+                .lines()
+                .map(|result| result.unwrap())
+                .take_while(|line| !line.is_empty())
+                .collect();
+
+            stream.write_all(response).unwrap();
+        }
+    });
+
+    return h;
+}
 fn spawn_crunch_view() {
     let crunch_task = task::spawn(async {
         let c: Crunch = Crunch::new().await;

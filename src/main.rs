@@ -53,5 +53,6 @@ fn main() {
     if config.is_mode_era {
         return Crunch::subscribe();
     }
+    info!("flaking");
     Crunch::flakes()
 }
