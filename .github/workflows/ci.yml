@@ -100,6 +100,6 @@ jobs:
       - name: Run cargo test
         uses: actions-rs/cargo@v1
         env:
-          CRUNCH_CONFIG_FILENAME: .env.example
+          CRUNCH_CONFIG_FILENAME: environments/cc3/testnet/.env
         with:
           command: test
