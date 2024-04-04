@@ -45,8 +45,6 @@ use crate::{
         Payout,
         PayoutSummary,
         Points,
-        RawData,
-        Report,
         Signer,
         Validator,
         Validators,
