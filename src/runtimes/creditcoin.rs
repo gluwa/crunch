@@ -658,7 +658,7 @@ async fn collect_validators_data(
     debug!("active_validators {:?}", active_validators);
     let mut validators: Validators = Vec::new();
 
-    let mut stashes = get_stashes(&crunch).await?;
+    let stashes = get_stashes(&crunch).await?;
 
     for (_i, stash_str) in stashes.iter().enumerate() {
         let stash = AccountId32::from_str(stash_str).map_err(|e| {
