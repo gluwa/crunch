@@ -191,11 +191,11 @@ pub async fn try_crunch(crunch: &Crunch) -> Result<(), CrunchError> {
     }
 
     // Try run payouts in batches
-    let (mut validators, payout_summary) =
+    let (mut validators, _payout_summary) =
         try_run_batch_payouts(&crunch, &seed_account_signer).await?;
 
     // Try run members in batches
-    let pools_summary = try_run_batch_pool_members(&crunch, &seed_account_signer).await?;
+    let _pools_summary = try_run_batch_pool_members(&crunch, &seed_account_signer).await?;
 
     // Get Network name
     let chain_name = api.rpc().system_chain().await?;

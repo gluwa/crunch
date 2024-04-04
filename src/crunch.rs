@@ -260,7 +260,7 @@ fn spawn_and_restart_subscription_on_error() {
         }
     });
 
-    let h = healthcheck();
+    healthcheck();
 
     task::block_on(t);
 }
@@ -286,7 +286,7 @@ fn spawn_and_restart_crunch_flakes_on_error() {
         }
     });
 
-    let h = healthcheck();
+    healthcheck();
 
     task::block_on(t);
 }
@@ -302,7 +302,7 @@ fn healthcheck() -> async_std::task::JoinHandle<()> {
 
             // we need to read the full request before we respond or we get a 'connection reset by peer error'
             let buf_reader = BufReader::new(&mut stream);
-            let http_request: Vec<_> = buf_reader
+            let _http_request: Vec<_> = buf_reader
                 .lines()
                 .map(|result| result.unwrap())
                 .take_while(|line| !line.is_empty())

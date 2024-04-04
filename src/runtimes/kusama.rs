@@ -249,7 +249,7 @@ pub async fn try_crunch(crunch: &Crunch) -> Result<(), CrunchError> {
     };
     debug!("network {:?}", network);
 
-    let data = RawData {
+    let _data = RawData {
         network,
         signer,
         validators,
