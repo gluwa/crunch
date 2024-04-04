@@ -21,14 +21,8 @@
 
 use codec;
 use reqwest;
-use std::{
-    str::Utf8Error,
-    string::String,
-};
-use subxt::error::{
-    DispatchError,
-    MetadataError,
-};
+use std::{str::Utf8Error, string::String};
+use subxt::error::{DispatchError, MetadataError};
 use thiserror::Error;
 
 /// Crunch specific error messages
