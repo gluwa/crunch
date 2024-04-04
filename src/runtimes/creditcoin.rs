@@ -234,7 +234,7 @@ pub async fn try_crunch(crunch: &Crunch) -> Result<(), CrunchError> {
         pools_summary,
     };
 
-    let report = Report::from(data);
+    let _report = Report::from(data);
 
     Ok(())
 }
