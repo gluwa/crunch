@@ -164,10 +164,12 @@ impl Report {
         self.add_raw_text("".into());
     }
 
+    #[allow(dead_code)]
     pub fn message(&self) -> String {
         self.body.join("\n")
     }
 
+    #[allow(dead_code)]
     pub fn formatted_message(&self) -> String {
         self.body.join("<br>")
     }
