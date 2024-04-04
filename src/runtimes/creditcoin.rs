@@ -1,34 +1,64 @@
 use crate::{
     config::CONFIG,
     crunch::{
-        get_account_id_from_storage_key, get_from_seed, random_wait, try_fetch_onet_data,
-        try_fetch_stashes_from_remote_url, Crunch, NominatorsAmount, ValidatorAmount,
+        get_account_id_from_storage_key,
+        get_from_seed,
+        random_wait,
+        try_fetch_onet_data,
+        try_fetch_stashes_from_remote_url,
+        Crunch,
+        NominatorsAmount,
+        ValidatorAmount,
         ValidatorIndex,
     },
     errors::CrunchError,
-    pools::{nomination_pool_account, AccountType},
+    pools::{
+        nomination_pool_account,
+        AccountType,
+    },
     report::{
-        Batch, EraIndex, Network, NominationPoolsSummary, Payout, PayoutSummary, Points,
-        RawData, Report, Signer, Validator, Validators,
+        Batch,
+        EraIndex,
+        Network,
+        NominationPoolsSummary,
+        Payout,
+        PayoutSummary,
+        Points,
+        RawData,
+        Report,
+        Signer,
+        Validator,
+        Validators,
     },
     stats,
 };
 use async_recursion::async_recursion;
 use futures::StreamExt;
-use log::{debug, info, warn};
+use log::{
+    debug,
+    info,
+    warn,
+};
 use std::{
     cmp,
-    convert::{TryFrom, TryInto},
+    convert::{
+        TryFrom,
+        TryInto,
+    },
     fs,
     result::Result,
     str::FromStr,
-    thread, time,
+    thread,
+    time,
 };
 use subxt::{
     error::DispatchError,
     ext::{
         codec::Encode,
-        sp_core::{sr25519, Pair as PairT},
+        sp_core::{
+            sr25519,
+            Pair as PairT,
+        },
     },
     tx::PairSigner,
     utils::AccountId32,
@@ -44,12 +74,22 @@ mod node_runtime {}
 use node_runtime::{
     runtime_types::{
         bounded_collections::bounded_vec::BoundedVec,
-        pallet_nomination_pools::{BondExtra, ClaimPermission},
+        pallet_nomination_pools::{
+            BondExtra,
+            ClaimPermission,
+        },
     },
-    staking::events::{EraPaid, PayoutStarted, Rewarded},
+    staking::events::{
+        EraPaid,
+        PayoutStarted,
+        Rewarded,
+    },
     system::events::ExtrinsicFailed,
     utility::events::{
-        BatchCompleted, BatchCompletedWithErrors, BatchInterrupted, ItemCompleted,
+        BatchCompleted,
+        BatchCompletedWithErrors,
+        BatchInterrupted,
+        ItemCompleted,
         ItemFailed,
     },
 };
@@ -466,7 +506,7 @@ pub async fn try_run_batch_payouts(
                             event.field_bytes(),
                             api.metadata(),
                         )?;
-                        return Err(dispatch_error.into());
+                        return Err(dispatch_error.into())
                     } else if let Some(ev) = event.as_event::<PayoutStarted>()? {
                         // https://polkadot.js.org/docs/substrate/events#payoutstartedu32-accountid32
                         // PayoutStarted(u32, AccountId32)
@@ -642,7 +682,7 @@ async fn collect_validators_data(
                     stash
                 )];
                 validators.push(v);
-                continue;
+                continue
             }
         };
         debug!("controller {:?}", controller);
@@ -685,7 +725,7 @@ async fn collect_validators_data(
                         v.is_previous_era_already_claimed = true;
                     }
                     v.claimed.push(e);
-                    continue;
+                    continue
                 }
                 // Verify if stash was active in set
                 let eras_stakers_addr =
@@ -720,13 +760,13 @@ async fn get_era_index_start(
     let history_depth: u32 = api.constants().at(&history_depth_addr)?;
 
     if era_index < cmp::min(config.maximum_history_eras, history_depth) {
-        return Ok(0);
+        return Ok(0)
     } else if config.is_short {
-        return Ok(era_index - cmp::min(config.maximum_history_eras, history_depth));
+        return Ok(era_index - cmp::min(config.maximum_history_eras, history_depth))
     } else {
         // Note: If crunch is running in verbose mode, ignore MAXIMUM_ERAS
         // since we still want to show information about inclusion and eras crunched for all history_depth
-        return Ok(era_index - history_depth);
+        return Ok(era_index - history_depth)
     }
 }
 
@@ -819,7 +859,7 @@ async fn get_display_name(
                     &parent_account,
                     Some(sub_account_name.to_string()),
                 )
-                .await;
+                .await
             } else {
                 let s = &stash.to_string();
                 Ok(format!("{}...{}", &s[..6], &s[s.len() - 6..]))
@@ -991,7 +1031,7 @@ pub async fn inspect(crunch: &Crunch) -> Result<(), CrunchError> {
                     // If reward was already claimed skip it
                     if claimed_rewards.contains(&era_index) {
                         claimed.push(era_index);
-                        continue;
+                        continue
                     }
                     // Verify if stash was active in set
                     let eras_stakers_addr = node_runtime::storage()
@@ -1057,7 +1097,7 @@ pub async fn try_fetch_pool_operators_for_compound(
     let config = CONFIG.clone();
 
     if config.pool_ids.len() == 0 && !config.pool_only_operator_compound_enabled {
-        return Ok(None);
+        return Ok(None)
     }
 
     let api = crunch.client().clone();
@@ -1120,11 +1160,11 @@ pub async fn try_fetch_pool_members_for_compound(
         && !config.pool_only_operator_compound_enabled
         && !config.pool_members_compound_enabled
     {
-        return Ok(None);
+        return Ok(None)
     }
 
     if config.pool_only_operator_compound_enabled {
-        return try_fetch_pool_operators_for_compound(&crunch).await;
+        return try_fetch_pool_operators_for_compound(&crunch).await
     }
 
     let api = crunch.client().clone();
@@ -1191,7 +1231,7 @@ pub async fn try_fetch_stashes_from_pool_ids(
         || (!config.pool_active_nominees_payout_enabled
             && !config.pool_all_nominees_payout_enabled)
     {
-        return Ok(None);
+        return Ok(None)
     }
 
     let active_era_addr = node_runtime::storage().staking().active_era();
@@ -1253,7 +1293,7 @@ pub async fn try_fetch_stashes_from_pool_ids(
         }
     }
     if all.is_empty() && active.is_empty() {
-        return Ok(None);
+        return Ok(None)
     }
 
     if config.pool_all_nominees_payout_enabled {
@@ -1268,7 +1308,7 @@ pub async fn try_fetch_stashes_from_pool_ids(
                 .join(",")
         );
 
-        return Ok(Some(all));
+        return Ok(Some(all))
     }
 
     // Note: by default only active nominees (stashes) are triggered

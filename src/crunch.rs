@@ -19,32 +19,55 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 use crate::{
-    config::{Config, CONFIG},
+    config::{
+        Config,
+        CONFIG,
+    },
     errors::CrunchError,
     runtimes::{
-        creditcoin, kusama, polkadot,
-        support::{ChainPrefix, ChainTokenSymbol, SupportedRuntime},
+        creditcoin,
+        kusama,
+        polkadot,
+        support::{
+            ChainPrefix,
+            ChainTokenSymbol,
+            SupportedRuntime,
+        },
         westend,
     },
 };
 use async_std::task;
-use log::{debug, error, info, warn};
+use log::{
+    debug,
+    error,
+    info,
+    warn,
+};
 use rand::Rng;
 use regex::Regex;
 use serde::Deserialize;
 use std::{
     convert::TryInto,
-    io::{prelude::*, BufReader},
+    io::{
+        prelude::*,
+        BufReader,
+    },
     net::TcpListener,
     result::Result,
-    thread, time,
+    thread,
+    time,
 };
 
 use subxt::{
-    ext::sp_core::{crypto, sr25519, Pair as PairT},
+    ext::sp_core::{
+        crypto,
+        sr25519,
+        Pair as PairT,
+    },
     storage::StorageKey,
     utils::AccountId32,
-    OnlineClient, PolkadotConfig,
+    OnlineClient,
+    PolkadotConfig,
 };
 
 pub type ValidatorIndex = Option<usize>;
@@ -124,7 +147,7 @@ pub async fn create_or_await_substrate_node_client(
                     chain, config.substrate_ws_url, name, version
                 );
 
-                break (client, SupportedRuntime::from(chain_token_symbol));
+                break (client, SupportedRuntime::from(chain_token_symbol))
             }
             Err(e) => {
                 error!("{}", e);
@@ -229,7 +252,7 @@ fn spawn_and_restart_subscription_on_error() {
                         let sleep_min = u32::pow(config.error_interval, n);
                         thread::sleep(time::Duration::from_secs((60 * sleep_min).into()));
                         n += 1;
-                        continue;
+                        continue
                     }
                 }
                 thread::sleep(time::Duration::from_secs(1));
@@ -257,7 +280,7 @@ fn spawn_and_restart_crunch_flakes_on_error() {
                 }
                 thread::sleep(time::Duration::from_secs((60 * sleep_min).into()));
                 n += 1;
-                continue;
+                continue
             };
             thread::sleep(time::Duration::from_secs(config.interval));
         }
@@ -289,7 +312,7 @@ fn healthcheck() -> async_std::task::JoinHandle<()> {
         }
     });
 
-    return h;
+    return h
 }
 fn spawn_crunch_view() {
     let crunch_task = task::spawn(async {
@@ -310,12 +333,12 @@ pub async fn try_fetch_stashes_from_remote_url(
 ) -> Result<Option<Vec<String>>, CrunchError> {
     let config = CONFIG.clone();
     if config.stashes_url.len() == 0 {
-        return Ok(None);
+        return Ok(None)
     }
     let response = reqwest::get(&config.stashes_url).await?.text().await?;
     let v: Vec<String> = response.trim().split('\n').map(|s| s.to_string()).collect();
     if v.is_empty() {
-        return Ok(None);
+        return Ok(None)
     }
     info!("{} stashes loaded from {}", v.len(), config.stashes_url);
     Ok(Some(v))
@@ -336,7 +359,7 @@ pub async fn try_fetch_onet_data(
 ) -> Result<Option<OnetData>, CrunchError> {
     let config = CONFIG.clone();
     if !config.onet_api_enabled {
-        return Ok(None);
+        return Ok(None)
     }
 
     let endpoint = if config.onet_api_url != "" {
