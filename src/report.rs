@@ -267,7 +267,7 @@ impl From<RawData> for Report {
             report.add_raw_text(format!(
                 "{} <b><a href=\"https://{}.subscan.io/validator/{}\">{}</a></b>",
                 is_active_desc,
-                data.network.name.to_lowercase().trim().replace(" ", ""),
+                data.network.name.to_lowercase().trim().replace(" ", "-"),
                 validator.stash,
                 validator.name,
             ));
@@ -363,7 +363,7 @@ impl From<RawData> for Report {
                         (<a href=\"https://{}.subscan.io/extrinsic/{:?}\">{}</a>) ✨",
                         payout.era_index,
                         payout.block_number,
-                        data.network.name.to_lowercase().trim().replace(" ", ""),
+                        data.network.name.to_lowercase().trim().replace(" ", "-"),
                         payout.extrinsic,
                         payout.extrinsic.to_string()
                     ));
@@ -444,7 +444,7 @@ impl From<RawData> for Report {
                         "💯 Batch finalized at block #{}
                     (<a href=\"https://{}.subscan.io/extrinsic/{:?}\">{}</a>) ✨",
                         batch.block_number,
-                        data.network.name.to_lowercase().trim().replace(" ", ""),
+                        data.network.name.to_lowercase().trim().replace(" ", "-"),
                         batch.extrinsic,
                         batch.extrinsic.to_string()
                     ));
