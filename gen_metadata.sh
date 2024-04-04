@@ -13,24 +13,23 @@ CURL_PARAMS="-H 'Content-Type: application/json' -d '{\"id\":\"1\", \"jsonrpc\":
 COUNTER=0
 # make sure there is a node running at TARGET_URL
 while [[ "$(eval curl -s -o /dev/null -w '%{http_code}' "$CURL_PARAMS")" != "200" && $COUNTER -lt 10 ]]; do
-    echo "ATTEMPT: $COUNTER - Not ready yet ....."
-    (( COUNTER=COUNTER+1 ))
-    sleep 2
+	echo "ATTEMPT: $COUNTER - Not ready yet ....."
+	((COUNTER = COUNTER + 1))
+	sleep 2
 done
 
 # fail if we still can't connect after 10 attempts
 set -e
 
 # Note: using eval b/c params are specified as string above
-eval curl "$CURL_PARAMS" > /dev/null
+eval curl "$CURL_PARAMS" >/dev/null
 
-subxt metadata --url "$TARGET_URL" --version "$TARGET_VERSION" -f bytes > "$TARGET_DEST"
+subxt metadata --url "$TARGET_URL" --version "$TARGET_VERSION" -f bytes >"$TARGET_DEST"
 
 # Check for the target file and sound the alarm if its not found
-if [ -e "$TARGET_DEST" ]
-then
-    echo "$TARGET_DEST generated successfully"
+if [ -e "$TARGET_DEST" ]; then
+	echo "$TARGET_DEST generated successfully"
 else
-    echo "$TARGET_DEST not found" >&2
-    exit 1
+	echo "$TARGET_DEST not found" >&2
+	exit 1
 fi
