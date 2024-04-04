@@ -139,7 +139,7 @@ pub async fn create_or_await_substrate_node_client(
 pub fn get_from_seed(seed: &str, pass: Option<&str>) -> sr25519::Pair {
     // Use regex to remove control characters
     let re = Regex::new(r"[\x00-\x1F]").unwrap();
-    let clean_seed = re.replace_all(&seed.trim(), "");
+    let clean_seed = re.replace_all(seed.trim(), "");
     sr25519::Pair::from_string(&clean_seed, pass)
         .expect("constructed from known-good static value; qed")
 }
@@ -250,10 +250,8 @@ fn spawn_and_restart_crunch_flakes_on_error() {
             let c: Crunch = Crunch::new().await;
             if let Err(e) = c.try_run_batch().await {
                 let sleep_min = u32::pow(config.error_interval, n);
-                match e {
-                    _ => {
-                        error!("{}", e);
-                    }
+                {
+                    error!("{}", e);
                 }
                 thread::sleep(time::Duration::from_secs((60 * sleep_min).into()));
                 n += 1;
@@ -269,7 +267,7 @@ fn spawn_and_restart_crunch_flakes_on_error() {
 }
 
 fn healthcheck() -> async_std::task::JoinHandle<()> {
-    let h = task::spawn(async {
+    task::spawn(async {
         let listener = TcpListener::bind("127.0.0.1:9999").unwrap();
         let response = "HTTP/1.1 200 OK\r\n\r\n".as_bytes();
 
@@ -287,10 +285,9 @@ fn healthcheck() -> async_std::task::JoinHandle<()> {
 
             stream.write_all(response).unwrap();
         }
-    });
-
-    return h;
+    })
 }
+
 fn spawn_crunch_view() {
     let crunch_task = task::spawn(async {
         let c: Crunch = Crunch::new().await;
@@ -309,7 +306,7 @@ pub fn random_wait(max: u64) -> u64 {
 pub async fn try_fetch_stashes_from_remote_url(
 ) -> Result<Option<Vec<String>>, CrunchError> {
     let config = CONFIG.clone();
-    if config.stashes_url.len() == 0 {
+    if config.stashes_url.is_empty() {
         return Ok(None);
     }
     let response = reqwest::get(&config.stashes_url).await?.text().await?;
@@ -339,7 +336,7 @@ pub async fn try_fetch_onet_data(
         return Ok(None);
     }
 
-    let endpoint = if config.onet_api_url != "" {
+    let endpoint = if !config.onet_api_url.is_empty() {
         config.onet_api_url
     } else {
         format!("https://{}-onet-api-beta.turboflakes.io", chain_name)
