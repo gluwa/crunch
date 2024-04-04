@@ -27,7 +27,10 @@ mod report;
 mod runtimes;
 mod stats;
 
-use crate::{config::CONFIG, crunch::Crunch};
+use crate::{
+    config::CONFIG,
+    crunch::Crunch,
+};
 use log::info;
 use std::env;
 
@@ -48,10 +51,10 @@ fn main() {
     );
 
     if config.only_view {
-        return Crunch::view();
+        return Crunch::view()
     }
     if config.is_mode_era {
-        return Crunch::subscribe();
+        return Crunch::subscribe()
     }
     info!("flaking");
     Crunch::flakes()

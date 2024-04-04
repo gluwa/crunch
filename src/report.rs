@@ -277,7 +277,7 @@ impl From<RawData> for Report {
                     report.add_raw_text(format!("⚠️ {} ⚠️", warning.clone()));
                     warn!("{}", warning);
                 }
-                continue;
+                continue
             }
 
             report.add_text(format!(
@@ -502,7 +502,7 @@ fn trend(a: f64, b: f64) -> String {
 
 fn performance(a: f64, b: f64, out: String) -> Option<String> {
     if a > b {
-        return Some(out);
+        return Some(out)
     }
     None
 }
@@ -607,7 +607,7 @@ fn random_index(len: usize) -> usize {
 fn context() -> String {
     let config = CONFIG.clone();
     if config.is_boring {
-        return String::from("rewards");
+        return String::from("rewards")
     }
     format!("{} flakes", Random::Words)
 }

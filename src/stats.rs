@@ -21,7 +21,7 @@
 
 pub fn mean(list: &Vec<f64>) -> f64 {
     if list.len() == 0 {
-        return 0.0;
+        return 0.0
     }
     let sum: f64 = list.iter().sum();
     sum / (list.len() as f64)
@@ -36,7 +36,7 @@ pub fn standard_deviation(list: &Vec<f64>) -> f64 {
 
 pub fn median(list: &mut Vec<u32>) -> u32 {
     if list.len() == 0 {
-        return 0;
+        return 0
     }
     list.sort();
     let mid = list.len() / 2;
@@ -69,7 +69,7 @@ pub fn confidence_interval(list: &Vec<f64>, z: f64) -> (f64, f64) {
 // https://www.statisticshowto.com/statistics-basics/find-outliers/
 pub fn iqr_interval(list: &mut Vec<u32>) -> (f64, f64) {
     if list.len() == 0 {
-        return (0.0, 0.0);
+        return (0.0, 0.0)
     }
     list.sort();
     let q1 = median(&mut (&list[..&list.len() / 2]).into());
