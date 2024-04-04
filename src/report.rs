@@ -189,7 +189,7 @@ impl From<RawData> for Report {
                     * 100.0,
             )
         } else {
-            format!("")
+            String::new()
         };
 
         let summary_already_desc = if data
@@ -204,7 +204,7 @@ impl From<RawData> for Report {
                     .total_validators_previous_era_already_claimed,
             )
         } else {
-            format!("")
+            String::new()
         };
 
         let summary_next_desc = if data.payout_summary.next_minimum_expected > 0 {
@@ -260,12 +260,12 @@ impl From<RawData> for Report {
             report.add_raw_text(format!(
                 "{} <b><a href=\"https://{}.subscan.io/validator/{}\">{}</a></b>",
                 is_active_desc,
-                data.network.name.to_lowercase().trim().replace(" ", ""),
+                data.network.name.to_lowercase().trim().replace(' ', ""),
                 validator.stash,
                 validator.name,
             ));
             // Show validator warnings
-            if validator.warnings.len() > 0 {
+            if !validator.warnings.is_empty() {
                 for warning in validator.warnings {
                     report.add_raw_text(format!("⚠️ {} ⚠️", warning.clone()));
                     warn!("{}", warning);
@@ -279,7 +279,7 @@ impl From<RawData> for Report {
             ));
 
             // Check if there are no payouts
-            if validator.payouts.len() == 0 {
+            if validator.payouts.is_empty() {
                 if validator.is_active {
                     report.add_text(format!(
                         "🥣 Looking forward for next <code>crunch</code> {} {}",
@@ -303,7 +303,7 @@ impl From<RawData> for Report {
                             / 10f64.powi(data.network.token_decimals.into()),
                         data.network.token_symbol,
                         good_performance(
-                            payout.points.validator.into(),
+                            payout.points.validator,
                             payout.points.ci99_9_interval.1,
                             payout.points.outlier_limits.1
                         )
@@ -356,14 +356,14 @@ impl From<RawData> for Report {
                         (<a href=\"https://{}.subscan.io/extrinsic/{:?}\">{}</a>) ✨",
                         payout.era_index,
                         payout.block_number,
-                        data.network.name.to_lowercase().trim().replace(" ", ""),
+                        data.network.name.to_lowercase().trim().replace(' ', ""),
                         payout.extrinsic,
-                        payout.extrinsic.to_string()
+                        payout.extrinsic
                     ));
                 }
 
                 // Check if there are still eras left to claim
-                if validator.unclaimed.len() > 0 {
+                if !validator.unclaimed.is_empty() {
                     let symbols = number_to_symbols(validator.unclaimed.len(), "⚡", 84);
                     report.add_text(format!(
                         "{} There are still {} eras left with {} to <code>crunch</code> {}",
@@ -395,7 +395,7 @@ impl From<RawData> for Report {
             ));
 
             // Claimed
-            if validator.claimed.len() > 0 {
+            if !validator.claimed.is_empty() {
                 let claimed_percentage = (validator.claimed.len() as f32
                     / (validator.claimed.len() + validator.unclaimed.len()) as f32)
                     * 100.0;
@@ -437,9 +437,9 @@ impl From<RawData> for Report {
                         "💯 Batch finalized at block #{}
                     (<a href=\"https://{}.subscan.io/extrinsic/{:?}\">{}</a>) ✨",
                         batch.block_number,
-                        data.network.name.to_lowercase().trim().replace(" ", ""),
+                        data.network.name.to_lowercase().trim().replace(' ', ""),
                         batch.extrinsic,
-                        batch.extrinsic.to_string()
+                        batch.extrinsic
                     ));
                 }
             } else {
@@ -476,9 +476,9 @@ impl From<RawData> for Report {
 
 fn number_to_symbols(n: usize, symbol: &str, max: usize) -> String {
     let cap: usize = match n {
-        n if n < (max / 4) as usize => 1,
-        n if n < (max / 2) as usize => 2,
-        n if n < max - (max / 4) as usize => 3,
+        n if n < (max / 4) => 1,
+        n if n < (max / 2) => 2,
+        n if n < max - (max / 4) => 3,
         _ => 4,
     };
     let v = vec![""; cap + 1];
