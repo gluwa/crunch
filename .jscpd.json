@@ -1,7 +1,3 @@
 {
-    "ignore": [
-        "src/crunch.rs",
-        "src/config.rs",
-        ".github/workflows/*.yml"
-    ]
+  "ignore": ["src/crunch.rs", "src/config.rs", ".github/workflows/*.yml"]
 }

@@ -10,7 +10,7 @@ subxt metadata --version 14 -f bytes > metadata/creditcoin_metadata.scale
 
 Or use the handy `gen_metadata.sh` script.
 
-## How to update docker image when metadata changes.
+## How to update docker image when metadata changes
 
 Create a new branch. Run a local version of your node with the updated runtime and run the
 `gen_metadata.sh` script. Move that metadata to the `metadata` folder and check that the binary
