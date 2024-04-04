@@ -18,19 +18,10 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-use crate::{
-    config::CONFIG,
-    crunch::OnetData,
-};
-use log::{
-    info,
-    warn,
-};
+use crate::{config::CONFIG, crunch::OnetData};
+use log::{info, warn};
 use rand::Rng;
-use subxt::{
-    ext::sp_core::H256,
-    utils::AccountId32,
-};
+use subxt::{ext::sp_core::H256, utils::AccountId32};
 
 pub type EraIndex = u32;
 
@@ -279,7 +270,7 @@ impl From<RawData> for Report {
                     report.add_raw_text(format!("⚠️ {} ⚠️", warning.clone()));
                     warn!("{}", warning);
                 }
-                continue
+                continue;
             }
 
             report.add_text(format!(
@@ -504,7 +495,7 @@ fn trend(a: f64, b: f64) -> String {
 
 fn performance(a: f64, b: f64, out: String) -> Option<String> {
     if a > b {
-        return Some(out)
+        return Some(out);
     }
     None
 }
@@ -512,12 +503,10 @@ fn performance(a: f64, b: f64, out: String) -> Option<String> {
 fn good_performance(value: u32, higher_limit: f64, outlier_limit: f64) -> String {
     match performance(value.into(), outlier_limit, "🤑 🤯 🚀".into()) {
         Some(p) => p,
-        None => {
-            match performance(value.into(), higher_limit, "😊 🔥".into()) {
-                Some(p) => p,
-                None => String::from(""),
-            }
-        }
+        None => match performance(value.into(), higher_limit, "😊 🔥".into()) {
+            Some(p) => p,
+            None => String::from(""),
+        },
     }
 }
 
@@ -609,7 +598,7 @@ fn random_index(len: usize) -> usize {
 fn context() -> String {
     let config = CONFIG.clone();
     if config.is_boring {
-        return String::from("rewards")
+        return String::from("rewards");
     }
     format!("{} flakes", Random::Words)
 }
