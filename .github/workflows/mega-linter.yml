@@ -72,7 +72,10 @@ jobs:
       # Push new commit if applicable (for now works only on PR from same repository, not from forks)
       - name: Prepare commit
         if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'commit' && github.ref != 'refs/heads/dev' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
-        run: sudo chown -Rc $UID .git/
+        run: |
+            sudo chown -Rc $UID .git/
+            git diff
+
       - name: Commit and push applied linter fixes
         if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'commit' && github.ref != 'refs/heads/dev' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
         uses: stefanzweifel/git-auto-commit-action@v5
