@@ -4,9 +4,9 @@ FROM ubuntu:jammy AS builder
 ARG PROFILE=release
 
 RUN apt-get update \
-    && apt-get -y --no-install-recommends install build-essential curl libssl-dev pkg-config \
+    && apt-get -y --no-install-recommends install build-essential curl libssl-dev pkg-config ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-RUN sudo curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN /root/.cargo/bin/rustup update
 
 COPY . /app
