@@ -22,14 +22,12 @@
 mod config;
 mod crunch;
 mod errors;
-mod matrix;
 mod pools;
 mod report;
 mod runtimes;
 mod stats;
 
-use crate::config::CONFIG;
-use crate::crunch::Crunch;
+use crate::{config::CONFIG, crunch::Crunch};
 use log::info;
 use std::env;
 
@@ -55,5 +53,6 @@ fn main() {
     if config.is_mode_era {
         return Crunch::subscribe();
     }
+    info!("flaking");
     Crunch::flakes()
 }

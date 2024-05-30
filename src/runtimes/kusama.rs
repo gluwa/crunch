@@ -19,25 +19,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-use crate::config::CONFIG;
-use crate::crunch::{
-    get_account_id_from_storage_key, get_from_seed, random_wait, try_fetch_onet_data,
-    try_fetch_stashes_from_remote_url, Crunch, NominatorsAmount, ValidatorAmount,
-    ValidatorIndex,
+use crate::{
+    config::CONFIG,
+    crunch::{
+        get_account_id_from_storage_key, get_from_seed, random_wait, try_fetch_onet_data,
+        try_fetch_stashes_from_remote_url, Crunch, NominatorsAmount, ValidatorAmount,
+        ValidatorIndex,
+    },
+    errors::CrunchError,
+    pools::{nomination_pool_account, AccountType},
+    report::{
+        Batch, EraIndex, Network, NominationPoolsSummary, Payout, PayoutSummary, Points,
+        RawData, Signer, Validator, Validators,
+    },
+    stats,
 };
-use crate::errors::CrunchError;
-use crate::pools::{nomination_pool_account, AccountType};
-use crate::report::{
-    Batch, EraIndex, Network, NominationPoolsSummary, Payout, PayoutSummary, Points,
-    RawData, Report, Signer, Validator, Validators,
-};
-use crate::stats;
 use async_recursion::async_recursion;
 use futures::StreamExt;
 use log::{debug, info, warn};
 use std::{
-    cmp, convert::TryFrom, convert::TryInto, fs, result::Result, str::FromStr, thread,
-    time,
+    cmp,
+    convert::{TryFrom, TryInto},
+    fs,
+    result::Result,
+    str::FromStr,
+    thread, time,
 };
 use subxt::{
     error::DispatchError,
@@ -57,17 +63,16 @@ use subxt::{
 mod node_runtime {}
 
 use node_runtime::{
-    runtime_types::bounded_collections::bounded_vec::BoundedVec,
-    runtime_types::pallet_nomination_pools::{BondExtra, ClaimPermission},
-    staking::events::EraPaid,
-    staking::events::PayoutStarted,
-    staking::events::Rewarded,
+    runtime_types::{
+        bounded_collections::bounded_vec::BoundedVec,
+        pallet_nomination_pools::{BondExtra, ClaimPermission},
+    },
+    staking::events::{EraPaid, PayoutStarted, Rewarded},
     system::events::ExtrinsicFailed,
-    utility::events::BatchCompleted,
-    utility::events::BatchCompletedWithErrors,
-    utility::events::BatchInterrupted,
-    utility::events::ItemCompleted,
-    utility::events::ItemFailed,
+    utility::events::{
+        BatchCompleted, BatchCompletedWithErrors, BatchInterrupted, ItemCompleted,
+        ItemFailed,
+    },
 };
 
 type Call = node_runtime::runtime_types::kusama_runtime::RuntimeCall;
@@ -202,18 +207,13 @@ pub async fn try_crunch(crunch: &Crunch) -> Result<(), CrunchError> {
     };
     debug!("network {:?}", network);
 
-    let data = RawData {
+    let _data = RawData {
         network,
         signer,
         validators,
         payout_summary,
         pools_summary,
     };
-
-    let report = Report::from(data);
-    crunch
-        .send_message(&report.message(), &report.formatted_message())
-        .await?;
 
     Ok(())
 }

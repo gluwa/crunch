@@ -1,7 +1,37 @@
-# crunch &middot; ![latest release](https://github.com/turboflakes/crunch/actions/workflows/create_release.yml/badge.svg)
+# Gluwa Related Info
+
+Information related to Gluwa specific changes for Crunch.
+
+## Metadata generation
+
+```shell
+subxt metadata --version 14 -f bytes > metadata/creditcoin_metadata.scale
+```
+
+Or use the handy `gen_metadata.sh` script.
+
+## How to update docker image when metadata changes
+
+Create a new branch. Run a local version of your node with the updated runtime and run the
+`gen_metadata.sh` script. Move that metadata to the `metadata` folder and check that the binary
+compiles (Because subxt uses macros you need to perform a full compile and not just a `cargo check`
+for completeness). After you test the new metadata create a PR and merge your branch into either
+`mainnet`, `testnnet`, or `devnet`. A push to either of these branches triggers a workflow that
+builds the docker image and pushes it to Gluwa's repo.
+The image will be named `crunch-[BRANCH]:latest`.
+
+## runtimes/creditcoin.rs
+
+This file is almost identical to `runtimes/polkadot.rs`. The only changes made were to the path of the metadata file for the node_runtime and in the function `try_run_batch_pool_members`. The `member` field expected an Address32 according to the compiler and it the other implementations it was a `MultiAddress`.
+
+## Issues with M1 Macs
+
+If you have issues building the docker image for this repo and you are on an M1 mac try upgrading your version of MacOs. YMMV
+
+## crunch &middot; ![latest release](https://github.com/turboflakes/crunch/actions/workflows/create_release.yml/badge.svg)
 
 <p align="center">
-  <img src="https://github.com/turboflakes/crunch/blob/main/assets/crunchbot-github-header.png?raw=true">
+  <img src="https://github.com/turboflakes/crunch/blob/main/assets/crunchbot-github-header.png?raw=true" alt="">
 </p>
 
 `crunch` is a command-line interface (CLI) to easily automate payouts of staking rewards on Substrate-based chains.
@@ -54,10 +84,10 @@ Configuration file example: [`.env.example`](https://github.com/turboflakes/crun
 
 ```bash
 # ----------------------------------------------------------------
-# crunch CLI configuration variables 
+# crunch CLI configuration variables
 # ----------------------------------------------------------------
 # [CRUNCH_STASHES] Validator stash addresses for which 'crunch flakes', 'crunch rewards'
-# or 'crunch view' will be applied. 
+# or 'crunch view' will be applied.
 # If needed specify more than one (e.g. stash_1,stash_2,stash_3).
 CRUNCH_STASHES=5GTD7ZeD823BjpmZBCSzBQp7cvHR1Gunq7oDkurZr9zUev2n
 #
@@ -68,7 +98,7 @@ CRUNCH_STASHES_URL=https://raw.githubusercontent.com/turboflakes/crunch/main/.re
 #
 # [CRUNCH_SUBSTRATE_WS_URL] Substrate websocket endpoint for which 'crunch' will try to
 # connect. (e.g. wss://kusama-rpc.polkadot.io) (NOTE: substrate_ws_url takes precedence
-# than <CHAIN> argument) 
+# than <CHAIN> argument)
 #CRUNCH_SUBSTRATE_WS_URL=wss://westend-rpc.polkadot.io:443
 #
 # [CRUNCH_MAXIMUM_PAYOUTS] Maximum number of unclaimed eras for which an extrinsic payout
@@ -76,16 +106,16 @@ CRUNCH_STASHES_URL=https://raw.githubusercontent.com/turboflakes/crunch/main/.re
 # 84 the maximum unclaimed payout calls for each stash address will be 4). [default: 4]
 CRUNCH_MAXIMUM_PAYOUTS=4
 #
-# [CRUNCH_MAXIMUM_HISTORY_ERAS] Maximum number of history eras for which crunch will look for 
+# [CRUNCH_MAXIMUM_HISTORY_ERAS] Maximum number of history eras for which crunch will look for
 # unclaimed rewards. The maximum value supported is the one defined by constant history_depth
-# (e.g. a value of 4 means that crunch will only check in the latest 4 eras if there are any 
+# (e.g. a value of 4 means that crunch will only check in the latest 4 eras if there are any
 # unclaimed rewards for each stash address). [default: 4]
 CRUNCH_MAXIMUM_HISTORY_ERAS=4
 #
 # [CRUNCH_MAXIMUM_CALLS] Maximum number of calls in a single batch. [default: 8]
 CRUNCH_MAXIMUM_CALLS=8
 #
-# [CRUNCH_SEED_PATH] File path containing the private seed phrase to Sign the extrinsic 
+# [CRUNCH_SEED_PATH] File path containing the private seed phrase to Sign the extrinsic
 # payout call. [default: .private.seed]
 #CRUNCH_SEED_PATH=.private.seed.example
 # ----------------------------------------------------------------
@@ -109,34 +139,38 @@ CRUNCH_ONET_NUMBER_LAST_SESSIONS=6
 # `crunch` will try to fetch the nominees of the respective pool id predefined here before triggering the respective payouts
 CRUNCH_POOL_IDS=10,15
 #
-# [CRUNCH_POOL_COMPOUND_THRESHOLD] Define minimum pending rewards threshold in PLANCKS. 
+# [CRUNCH_POOL_COMPOUND_THRESHOLD] Define minimum pending rewards threshold in PLANCKS.
 # Note: only pending rewards above the threshold are included in the auto-compound batch.
 CRUNCH_POOL_COMPOUND_THRESHOLD=100000000000
 #
-# [CRUNCH_POOL_MEMBERS_COMPOUND_ENABLED] Enable auto-compound rewards for every member that belongs to the pools 
-# previously selected by CRUNCH_POOL_IDS. Note that members have to have their permissions 
+# [CRUNCH_POOL_MEMBERS_COMPOUND_ENABLED] Enable auto-compound rewards for every member that belongs to the pools
+# previously selected by CRUNCH_POOL_IDS. Note that members have to have their permissions
 # set as PermissionlessCompound or PermissionlessAll.
 #CRUNCH_POOL_MEMBERS_COMPOUND_ENABLED=true
 #
-# [CRUNCH_POOL_ONLY_OPERATOR_COMPOUND_ENABLED] Enable auto-compound rewards for the pool operator member that belongs to the pools 
-# previously selected by CRUNCH_POOL_IDS. Note that operator member account have to have their permissions 
+# [CRUNCH_POOL_ONLY_OPERATOR_COMPOUND_ENABLED] Enable auto-compound rewards for the pool operator member that belongs to the pools
+# previously selected by CRUNCH_POOL_IDS. Note that operator member account have to have their permissions
 # set as PermissionlessCompound or PermissionlessAll.
 CRUNCH_POOL_ONLY_OPERATOR_COMPOUND_ENABLED=true
 #
-# [CRUNCH_POOL_ACTIVE_NOMINEES_PAYOUT_ENABLED] Enable payouts only for ACTIVE nominees assigned to the pools 
+# [CRUNCH_POOL_ACTIVE_NOMINEES_PAYOUT_ENABLED] Enable payouts only for ACTIVE nominees assigned to the pools
 # previously selected by CRUNCH_POOL_IDS.
 #CRUNCH_POOL_ACTIVE_NOMINEES_PAYOUT_ENABLED=true
 #
-# [CRUNCH_POOL_ALL_NOMINEES_PAYOUT_ENABLED] Enable payouts for ALL nominees assigned to the pools 
+# [CRUNCH_POOL_ALL_NOMINEES_PAYOUT_ENABLED] Enable payouts for ALL nominees assigned to the pools
 # previously selected by CRUNCH_POOL_IDS.
 #CRUNCH_POOL_ALL_NOMINEES_PAYOUT_ENABLED=true
 ```
 
-Create a seed private file `.private.seed` inside `crunch-bot` folder and write the private seed phrase of the account responsible to sign the extrinsic payout call as in [`.private.seed.example`](https://github.com/turboflakes/crunch/blob/main/.private.seed.example) (Note: `.private.seed` is the default name and a hidden file, if you want something different you can adjust it later with the option `crunch flakes --seed-path ~/crunch-bot/.kusama.private.seed` )
+Create a seed private file `.private.seed` inside `crunch-bot` folder and write the private seed
+phrase of the account responsible to sign the extrinsic payout call as in
+[`.private.seed.example`](https://github.com/turboflakes/crunch/blob/main/.private.seed.example)
+(Note: `.private.seed` is the default name and a hidden file, if you want something different you
+can adjust it later with the option `crunch flakes --seed-path ~/crunch-bot/.kusama.private.seed` )
 
 ```bash
 #!/bin/bash
-# create a file with a file editor (Vim in this case) and write the private seed phrase 
+# create a file with a file editor (Vim in this case) and write the private seed phrase
 # of the account responsible to sign the extrinsic payout call
 vi /crunch-bot/.private.seed
 # when ready write and quit (:wq!)
@@ -162,9 +196,16 @@ WantedBy=multi-user.target
 
 ### Crunch Bot ([Matrix](https://matrix.org/))
 
-If you set up `crunch` on your server with a matrix user 👉  you get your own **Crunch Bot**.
+If you set up `crunch` on your server with a matrix user 👉 you get your own **Crunch Bot**.
 
-To enable **Crunch Bot** you will need to create a specific account on Element or similar and  copy the values to the respective environment variables `CRUNCH_MATRIX_BOT_USER` and `CRUNCH_MATRIX_BOT_PASSWORD` like in the configuration example file [`.env.example`](https://github.com/turboflakes/crunch/blob/main/.env.example). You may also want to set your regular matrix user to the environment variable `CRUNCH_MATRIX_USER`. So that **Crunch Bot** could create a private room and send in messages. By default **Crunch Bot** will automatically invite your regular matrix user to a private room. Also by default **Crunch Bot** will send a copy of the messages to the respective network public room for which is connected to.
+To enable **Crunch Bot** you will need to create a specific account on Element or similar and copy
+the values to the respective environment variables `CRUNCH_MATRIX_BOT_USER` and
+`CRUNCH_MATRIX_BOT_PASSWORD` like in the configuration example file
+[`.env.example`](https://github.com/turboflakes/crunch/blob/main/.env.example). You may also want
+to set your regular matrix user to the environment variable `CRUNCH_MATRIX_USER`. So that
+**Crunch Bot** could create a private room and send in messages. By default **Crunch Bot** will
+automatically invite your regular matrix user to a private room. Also by default **Crunch Bot**
+will send a copy of the messages to the respective network public room for which is connected to.
 
 ### Public Rooms available
 
@@ -173,19 +214,19 @@ Join and read the messages history of all the Public Rooms for which **Crunch Bo
 <table style="width:100%;" cellspacing="0" cellpadding="0">
   <tr>
     <td style="width: 100px;">
-        <img style="width: 80px;" src="https://github.com/turboflakes/crunch/blob/main/assets/crunchbot-westend-room-128.png?raw=true" />
+        <img style="width: 80px;" src="https://github.com/turboflakes/crunch/blob/main/assets/crunchbot-westend-room-128.png?raw=true" alt=""/>
     </td>
     <td><a href="https://matrix.to/#/%23westend-crunch-bot:matrix.org" target="_blank">Westend Crunch Bot (Public)</a></td>
   </tr>
   <tr>
     <td style="width: 100px;">
-        <img style="width: 80px;" src="https://github.com/turboflakes/crunch/blob/main/assets/crunchbot-kusama-room-128.png?raw=true" />
+        <img style="width: 80px;" src="https://github.com/turboflakes/crunch/blob/main/assets/crunchbot-kusama-room-128.png?raw=true" alt=""/>
     </td>
     <td><a href="https://matrix.to/#/%23kusama-crunch-bot:matrix.org" target="_blank">Kusama Crunch Bot (Public)</a></td>
   </tr>
   <tr>
     <td style="width: 100px;">
-        <img style="width: 80px;" src="https://github.com/turboflakes/crunch/blob/main/assets/crunchbot-polkadot-room-128.png?raw=true" />
+        <img style="width: 80px;" src="https://github.com/turboflakes/crunch/blob/main/assets/crunchbot-polkadot-room-128.png?raw=true" alt=""/>
     </td>
     <td><a href="https://matrix.to/#/%23polkadot-crunch-bot:matrix.org" target="_blank">Polkadot Crunch Bot (Public)</a></td>
   </tr>
@@ -364,15 +405,25 @@ ARGS:
               hours) [default: era]  [possible values: era, daily, turbo]
 ```
 
-Note: By default `crunch` collects the outstanding payouts from previous eras and group all the extrinsic payout calls in group of 4 or whatever value defined in the flag `maximum-calls` so that a single batch call per group can be made. The collection of all outstanding payouts from previous eras is also limited by 2 other flags. The first being `maximum-payouts` which default value is 4, this flag limits the number of payouts **per stash**. The other one is the `maximum-history-eras` which default is also 4, this flag limits the number of past eras `crunch` will look for unclaimed rewards - but this flag only applies if `short` flag is also used in the configuration. This is done so that `crunch` can run efficiently every era.
+Note: By default `crunch` collects the outstanding payouts from previous eras and group all the
+extrinsic payout calls in group of 4 or whatever value defined in the flag `maximum-calls` so that
+a single batch call per group can be made. The collection of all outstanding payouts from previous
+eras is also limited by 2 other flags. The first being `maximum-payouts` which default value is 4,
+this flag limits the number of payouts **per stash**. The other one is the `maximum-history-eras`
+which default is also 4, this flag limits the number of past eras `crunch` will look for unclaimed
+rewards - but this flag only applies if `short` flag is also used in the configuration. This is done
+so that `crunch` can run efficiently every era.
 
-With that said, if it's the **first time** you are running `crunch` and you are not sure if you have any unclaimed rewards or if you just want to know for the stash accounts defined in the confguration file (`.env`), which eras from the last 84 have already been claimed or unclaimed, you can simply run `crunch view`.
+With that said, if it's the **first time** you are running `crunch` and you are not sure if you have
+any unclaimed rewards or if you just want to know for the stash accounts defined in the confguration
+file (`.env`), which eras from the last 84 have already been claimed or unclaimed, you can simply run
+`crunch view`.
 
 Note: The `crunch view` mode only logs information into the terminal.
 
 ```bash
 #!/bin/bash
-# log unclaimed rewards for Westend network 
+# log unclaimed rewards for Westend network
 crunch westend view
 # or for Kusama network
 crunch kusama view
@@ -385,7 +436,8 @@ Note: You can run `crunch` inside a tmux session and leave it, or using somethin
 ## Common issue on Ubuntu 22.04 when using the crunch binary
 
 Install previous openssl version from:
-```
+
+```bash
 wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
 dpkg -i libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
 ```
@@ -446,17 +498,22 @@ cargo watch -x 'run --bin crunch'
 
 ### Downloading metadata from a Substrate node
 
-Use the [`subxt-cli`](./cli) tool to download the metadata for your target runtime from a node.
+Use the [`subxt-cli`](https://docs.substrate.io/reference/command-line-tools/subxt/) tool to download the metadata for your target runtime from a node.
 
 Install
+
 ```bash
 cargo install subxt-cli
 ```
+
 Save the encoded metadata to a file
+
 ```bash
 subxt metadata --url https://westend-rpc.polkadot.io  -f bytes > westend_metadata.scale
 ```
+
 (Optional) Generate runtime API client code from metadata
+
 ```bash
 subxt codegen --url https://westend-rpc.polkadot.io | rustfmt --edition=2018 --emit=stdout > westend_runtime.rs
 ```
@@ -508,9 +565,10 @@ Any feedback is welcome.
 `crunch` was made by **TurboFlakes**. Visit us at <a href="https://turboflakes.io" target="_blank" rel="noreferrer">turboflakes.io</a> to know more about our work.
 
 If you like this project
-  - 🚀 Share our work 
-  - ✌️ Visit us at <a href="https://turboflakes.io" target="_blank" rel="noreferrer">turboflakes.io</a>
-  - ✨ Or you could also star the Github project :)
+
+- 🚀 Share our work
+- ✌️ Visit us at <a href="https://turboflakes.io" target="_blank" rel="noreferrer">turboflakes.io</a>
+- ✨ Or you could also star the Github project :)
 
 Tips are welcome
 
@@ -524,8 +582,8 @@ Tips are welcome
 ### Quote
 
 > "Study hard what interests you the most in the most undisciplined, irreverent and original manner possible."
-― Richard Feynmann
+> ― Richard Feynmann
 
-__
+\_\_
 
 Enjoy `crunch`

@@ -18,20 +18,27 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-use crate::config::{Config, CONFIG};
-use crate::errors::CrunchError;
-use crate::matrix::Matrix;
-use crate::runtimes::{
-    kusama, polkadot,
-    support::{ChainPrefix, ChainTokenSymbol, SupportedRuntime},
-    westend,
+use crate::{
+    config::{Config, CONFIG},
+    errors::CrunchError,
+    runtimes::{
+        creditcoin, kusama, polkadot,
+        support::{ChainPrefix, ChainTokenSymbol, SupportedRuntime},
+        westend,
+    },
 };
 use async_std::task;
 use log::{debug, error, info, warn};
 use rand::Rng;
 use regex::Regex;
 use serde::Deserialize;
-use std::{convert::TryInto, result::Result, thread, time};
+use std::{
+    convert::TryInto,
+    io::{prelude::*, BufReader},
+    net::TcpListener,
+    result::Result,
+    thread, time,
+};
 
 use subxt::{
     ext::sp_core::{crypto, sr25519, Pair as PairT},
@@ -132,7 +139,7 @@ pub async fn create_or_await_substrate_node_client(
 pub fn get_from_seed(seed: &str, pass: Option<&str>) -> sr25519::Pair {
     // Use regex to remove control characters
     let re = Regex::new(r"[\x00-\x1F]").unwrap();
-    let clean_seed = re.replace_all(&seed.trim(), "");
+    let clean_seed = re.replace_all(seed.trim(), "");
     sr25519::Pair::from_string(&clean_seed, pass)
         .expect("constructed from known-good static value; qed")
 }
@@ -140,7 +147,6 @@ pub fn get_from_seed(seed: &str, pass: Option<&str>) -> sr25519::Pair {
 pub struct Crunch {
     runtime: SupportedRuntime,
     client: OnlineClient<PolkadotConfig>,
-    matrix: Matrix,
 }
 
 impl Crunch {
@@ -148,38 +154,11 @@ impl Crunch {
         let (client, runtime) =
             create_or_await_substrate_node_client(CONFIG.clone()).await;
 
-        // Initialize matrix client
-        let mut matrix: Matrix = Matrix::new();
-        matrix.authenticate(runtime).await.unwrap_or_else(|e| {
-            error!("{}", e);
-            Default::default()
-        });
-
-        Crunch {
-            runtime,
-            client,
-            matrix,
-        }
+        Crunch { runtime, client }
     }
 
     pub fn client(&self) -> &OnlineClient<PolkadotConfig> {
         &self.client
-    }
-
-    /// Returns the matrix configuration
-    pub fn matrix(&self) -> &Matrix {
-        &self.matrix
-    }
-
-    pub async fn send_message(
-        &self,
-        message: &str,
-        formatted_message: &str,
-    ) -> Result<(), CrunchError> {
-        self.matrix()
-            .send_message(message, formatted_message)
-            .await?;
-        Ok(())
     }
 
     /// Spawn and restart crunch flakes task on error
@@ -202,6 +181,7 @@ impl Crunch {
             SupportedRuntime::Polkadot => polkadot::inspect(self).await,
             SupportedRuntime::Kusama => kusama::inspect(self).await,
             SupportedRuntime::Westend => westend::inspect(self).await,
+            SupportedRuntime::Creditcoin => creditcoin::inspect(self).await,
             // _ => unreachable!(),
         }
     }
@@ -211,6 +191,7 @@ impl Crunch {
             SupportedRuntime::Polkadot => polkadot::try_crunch(self).await,
             SupportedRuntime::Kusama => kusama::try_crunch(self).await,
             SupportedRuntime::Westend => westend::try_crunch(self).await,
+            SupportedRuntime::Creditcoin => creditcoin::try_crunch(self).await,
             // _ => unreachable!(),
         }
     }
@@ -225,7 +206,10 @@ impl Crunch {
             }
             SupportedRuntime::Westend => {
                 westend::run_and_subscribe_era_paid_events(self).await
-            } // _ => unreachable!(),
+            }
+            SupportedRuntime::Creditcoin => {
+                creditcoin::run_and_subscribe_era_paid_events(self).await
+            }
         }
     }
 }
@@ -243,9 +227,6 @@ fn spawn_and_restart_subscription_on_error() {
                     _ => {
                         error!("{}", e);
                         let sleep_min = u32::pow(config.error_interval, n);
-                        let message = format!("On hold for {} min!", sleep_min);
-                        let formatted_message = format!("<br/>🚨 An error was raised -> <code>crunch</code> on hold for {} min while rescue is on the way 🚁 🚒 🚑 🚓<br/><br/>", sleep_min);
-                        c.send_message(&message, &formatted_message).await.unwrap();
                         thread::sleep(time::Duration::from_secs((60 * sleep_min).into()));
                         n += 1;
                         continue;
@@ -255,6 +236,9 @@ fn spawn_and_restart_subscription_on_error() {
             };
         }
     });
+
+    healthcheck();
+
     task::block_on(t);
 }
 
@@ -266,14 +250,8 @@ fn spawn_and_restart_crunch_flakes_on_error() {
             let c: Crunch = Crunch::new().await;
             if let Err(e) = c.try_run_batch().await {
                 let sleep_min = u32::pow(config.error_interval, n);
-                match e {
-                    CrunchError::MatrixError(_) => warn!("Matrix message skipped!"),
-                    _ => {
-                        error!("{}", e);
-                        let message = format!("On hold for {} min!", sleep_min);
-                        let formatted_message = format!("<br/>🚨 An error was raised -> <code>crunch</code> on hold for {} min while rescue is on the way 🚁 🚒 🚑 🚓<br/><br/>", sleep_min);
-                        c.send_message(&message, &formatted_message).await.unwrap();
-                    }
+                {
+                    error!("{}", e);
                 }
                 thread::sleep(time::Duration::from_secs((60 * sleep_min).into()));
                 n += 1;
@@ -282,7 +260,32 @@ fn spawn_and_restart_crunch_flakes_on_error() {
             thread::sleep(time::Duration::from_secs(config.interval));
         }
     });
+
+    healthcheck();
+
     task::block_on(t);
+}
+
+fn healthcheck() -> async_std::task::JoinHandle<()> {
+    task::spawn(async {
+        let listener = TcpListener::bind("127.0.0.1:9999").unwrap();
+        let response = "HTTP/1.1 200 OK\r\n\r\n".as_bytes();
+
+        for stream in listener.incoming() {
+            // unwrap and panic on error to interrupt the main task
+            let mut stream = stream.unwrap();
+
+            // we need to read the full request before we respond or we get a 'connection reset by peer error'
+            let buf_reader = BufReader::new(&mut stream);
+            let _http_request: Vec<_> = buf_reader
+                .lines()
+                .map(|result| result.unwrap())
+                .take_while(|line| !line.is_empty())
+                .collect();
+
+            stream.write_all(response).unwrap();
+        }
+    })
 }
 
 fn spawn_crunch_view() {
@@ -303,7 +306,7 @@ pub fn random_wait(max: u64) -> u64 {
 pub async fn try_fetch_stashes_from_remote_url(
 ) -> Result<Option<Vec<String>>, CrunchError> {
     let config = CONFIG.clone();
-    if config.stashes_url.len() == 0 {
+    if config.stashes_url.is_empty() {
         return Ok(None);
     }
     let response = reqwest::get(&config.stashes_url).await?.text().await?;
@@ -333,7 +336,7 @@ pub async fn try_fetch_onet_data(
         return Ok(None);
     }
 
-    let endpoint = if config.onet_api_url != "" {
+    let endpoint = if !config.onet_api_url.is_empty() {
         config.onet_api_url
     } else {
         format!("https://{}-onet-api-beta.turboflakes.io", chain_name)
@@ -357,10 +360,12 @@ pub async fn try_fetch_onet_data(
                 reqwest::StatusCode::OK => {
                     match response.json::<OnetData>().await {
                         Ok(parsed) => return Ok(Some(parsed)),
-                        Err(e) => error!(
-                            "Unable to parse ONE-T response for stash {} error: {:?}",
-                            stash, e
-                        ),
+                        Err(e) => {
+                            error!(
+                                "Unable to parse ONE-T response for stash {} error: {:?}",
+                                stash, e
+                            )
+                        }
                     };
                 }
                 other => {

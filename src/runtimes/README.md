@@ -1,9 +1,9 @@
-## Supported Runtimes
-  - Polkadot
-  - Kusama
-  - Westend
-  - Aleph Zero testnet
-  - Aleph Zero mainnet
+# Supported Runtimes
+- Polkadot
+- Kusama
+- Westend
+- Aleph Zero testnet
+- Aleph Zero mainnet
 
 TODO: Improve the runtimes implementation without the need of replicating the same functions for each runtime. Note that *RuntimeApi* is runtime specific. It gives access to api functions specific for each runtime.
 

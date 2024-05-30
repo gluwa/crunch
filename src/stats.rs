@@ -19,8 +19,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#[allow(clippy::ptr_arg)]
 pub fn mean(list: &Vec<f64>) -> f64 {
-    if list.len() == 0 {
+    if list.is_empty() {
         return 0.0;
     }
     let sum: f64 = list.iter().sum();
@@ -29,13 +30,13 @@ pub fn mean(list: &Vec<f64>) -> f64 {
 
 pub fn standard_deviation(list: &Vec<f64>) -> f64 {
     let m = mean(list);
-    let mut variance: Vec<f64> =
-        list.iter().map(|&score| (score - m).powf(2.0)).collect();
-    mean(&mut variance).sqrt()
+    let variance: Vec<f64> = list.iter().map(|&score| (score - m).powf(2.0)).collect();
+    mean(&variance).sqrt()
 }
 
+#[allow(clippy::ptr_arg)]
 pub fn median(list: &mut Vec<u32>) -> u32 {
-    if list.len() == 0 {
+    if list.is_empty() {
         return 0;
     }
     list.sort();
@@ -67,13 +68,14 @@ pub fn confidence_interval(list: &Vec<f64>, z: f64) -> (f64, f64) {
 }
 // Find outliers by Interquartile Range(IQR)
 // https://www.statisticshowto.com/statistics-basics/find-outliers/
+#[allow(clippy::ptr_arg)]
 pub fn iqr_interval(list: &mut Vec<u32>) -> (f64, f64) {
-    if list.len() == 0 {
+    if list.is_empty() {
         return (0.0, 0.0);
     }
     list.sort();
     let q1 = median(&mut (&list[..&list.len() / 2]).into());
-    let q3 = median(&mut (&list[&list.len() - (&list.len() / 2)..]).into());
+    let q3 = median(&mut (&list[list.len() - (&list.len() / 2)..]).into());
     let iqr = q3 - q1;
     (
         (q1 as f64) - (iqr as f64 * 1.5),
