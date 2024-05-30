@@ -4,7 +4,7 @@ FROM ubuntu:jammy AS builder
 ARG PROFILE=release
 
 RUN apt-get update \
-    && apt-get -y --no-install-recommends install build-essential curl libssl-dev pkg-config \
+    && apt-get -y --no-install-recommends install build-essential curl libssl-dev pkg-config rustc \
     && rm -rf /var/lib/apt/lists/*
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 RUN /root/.cargo/bin/rustup update
