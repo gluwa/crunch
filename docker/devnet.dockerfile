@@ -6,7 +6,7 @@ ARG PROFILE=release
 RUN apt-get update \
     && apt-get -y --no-install-recommends install build-essential curl libssl-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+RUN sudo curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN /root/.cargo/bin/rustup update
 
 COPY . /app
