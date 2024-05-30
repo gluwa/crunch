@@ -6,12 +6,12 @@ ARG PROFILE=release
 RUN apt-get update \
     && apt-get -y --no-install-recommends install build-essential curl libssl-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
-RUN sudo curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -y
-RUN ~/.cargo/bin/rustup update
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+RUN /root/.cargo/bin/rustup update
 
 COPY . /app
 WORKDIR /app
-RUN ~/.cargo/bin/cargo build --$PROFILE --package crunch
+RUN /root/.cargo/bin/cargo build --$PROFILE --package crunch
 
 # ===== SECOND STAGE ======
 FROM ubuntu:jammy
