@@ -11,7 +11,7 @@ permissions: read-all
 jobs:
   ## not sure if having multiple private seeds break image so splitting it up by network still
   devnet:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -40,7 +40,7 @@ jobs:
           tags: gluwa/crunch:devnet-${{github.run_id}}
 
   testnet:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -73,7 +73,7 @@ jobs:
           tags: gluwa/crunch:testnet-${{github.run_id}}
 
   mainnet:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Set up QEMU
