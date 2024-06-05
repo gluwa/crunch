@@ -1,5 +1,5 @@
 # hadolint global ignore=DL3008,DL4006
-FROM ubuntu:jammy AS builder
+FROM ubuntu:24.04 AS builder
 
 ARG PROFILE=release
 
@@ -14,7 +14,7 @@ WORKDIR /app
 RUN /root/.cargo/bin/cargo build --$PROFILE --package crunch
 
 # ===== SECOND STAGE ======
-FROM ubuntu:jammy
+FROM ubuntu:24.04
 
 RUN apt-get update \
     && apt-get -y --no-install-recommends install ca-certificates \
