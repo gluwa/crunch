@@ -4,9 +4,9 @@ FROM ubuntu:24.04 AS builder
 ARG PROFILE=release
 
 RUN apt-get update \
-    && apt-get -y --no-install-recommends install build-essential curl libssl-dev pkg-config \
+    && apt-get -y --no-install-recommends install build-essential curl libssl-dev pkg-config ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN /root/.cargo/bin/rustup update
 
 COPY . /app
@@ -22,6 +22,10 @@ RUN apt-get update \
 
 ARG PROFILE=release
 COPY --from=builder /app/target/$PROFILE/crunch /usr/local/bin
+
+# Add the credentials needed to run crunch for this environment
+ARG NETWORK=devnet
+COPY --from=builder /app/environments/cc3/$NETWORK/* /
 
 RUN useradd -u 1000 -U -s /bin/sh crunch
 USER crunch

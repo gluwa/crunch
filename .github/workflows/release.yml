@@ -63,6 +63,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/${{ matrix.network }}.dockerfile
+          build-args: |
+            NETWORK=${{ matrix.network }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: gluwa/crunch:${{ matrix.network }}-${{github.run_id}}
