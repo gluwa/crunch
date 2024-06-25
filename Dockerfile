@@ -27,7 +27,7 @@ COPY --from=builder /app/target/$PROFILE/crunch /usr/local/bin
 ARG NETWORK=devnet
 COPY --from=builder /app/environments/cc3/$NETWORK/* /
 
-RUN useradd -u 1000 -U -s /bin/sh crunch
+RUN useradd -U -s /bin/sh crunch
 USER crunch
 
 ENV RUST_BACKTRACE=1
