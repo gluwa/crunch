@@ -30,7 +30,7 @@ COPY --from=builder /app/environments/cc3/$NETWORK/* /
 RUN useradd -u 1000 -U -s /bin/sh crunch
 USER crunch
 
-ENV RUST_BACKTRACE 1
+ENV RUST_BACKTRACE=1
 ENV RUST_LOG="info"
 
 RUN /usr/local/bin/crunch --version
