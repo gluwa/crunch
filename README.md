@@ -15,10 +15,11 @@ Or use the handy `gen_metadata.sh` script.
 Create a new branch. Run a local version of your node with the updated runtime and run the
 `gen_metadata.sh` script. Move that metadata to the `metadata` folder and check that the binary
 compiles (Because subxt uses macros you need to perform a full compile and not just a `cargo check`
-for completeness). After you test the new metadata create a PR and merge your branch into either
-`mainnet`, `testnnet`, or `devnet`. A push to either of these branches triggers a workflow that
-builds the docker image and pushes it to Gluwa's repo.
-The image will be named `crunch-[BRANCH]:latest`.
+for completeness). After you test the new metadata create a PR and merge your branch into `dev`.
+
+A push to a branch of the form `release/*` triggers a workflow that builds the docker images
+and pushes them to Gluwa's repo. The *Release* workflow can also be triggered manually!
+Resulting docker images will be named `gluwa:crunch:<mainnet|testnet|devnet>-<github_run_id>`.
 
 ## runtimes/creditcoin.rs
 
